@@ -10,6 +10,20 @@ import { sequelize } from "../Config/database";
 import Usuario from "../Models/Usuarios";
 
 // =========================================
+// COOKIES: DESARROLLO Y PRODUCCIÓN
+// =========================================
+// Vercel y Render tienen dominios diferentes.
+// En producción, SameSite=None requiere Secure=true.
+const esProduccion = process.env.NODE_ENV === "production";
+
+const opcionesCookie = {
+  httpOnly: true,
+  secure: esProduccion,
+  sameSite: (esProduccion ? "none" : "lax") as "none" | "lax",
+  path: "/"
+};
+
+// =========================================
 // 1. REGISTRAR ESTUDIANTE
 // =========================================
 
@@ -191,11 +205,8 @@ export const iniciarSesion = async (
 
     // Guardar JWT en cookie
     res.cookie("token", token, {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      maxAge: 2 * 60 * 60 * 1000,
-      path: "/"
+      ...opcionesCookie,
+      maxAge: 2 * 60 * 60 * 1000
     });
 
     // Respuesta al frontend
@@ -231,12 +242,7 @@ export const cerrarSesion = (
 ): void => {
 
   // Eliminar cookie del navegador
-  res.clearCookie("token", {
-    httpOnly: true,
-    secure: process.env.NODE_ENV === "production",
-    sameSite: "lax",
-    path: "/"
-  });
+  res.clearCookie("token", opcionesCookie);
 
   res.status(200).json({
     ok: true,
@@ -656,12 +662,7 @@ export const restablecerClave = async (
     }
 
     // 7. Eliminar cookie de sesión actual
-    res.clearCookie("token", {
-      httpOnly: true,
-      secure: process.env.NODE_ENV === "production",
-      sameSite: "lax",
-      path: "/"
-    });
+    res.clearCookie("token", opcionesCookie);
 
     // 8. Responder
     res.status(200).json({
