@@ -48,17 +48,96 @@ const frontendLocal = "http://localhost:5173";
 const frontendProduccion = process.env.FRONTEND_URL;
 
 // Direcciones autorizadas
+
+// ======================================
+// CONFIGURACIÓN CORS
+// ======================================
+
+
+ // ======================================
+ // CONFIGURACIÓN CORS
+ // ======================================
+
 const origenesPermitidos = [
-  frontendLocal,
-  frontendProduccion
+  "http://localhost:5173",
+  process.env.FRONTEND_URL
 ].filter((origen): origen is string => Boolean(origen));
 
 app.use(
   cors({
-    origin: origenesPermitidos,
-    credentials: true
+    origin: (origin, callback) => {
+
+      // Permitir solicitudes sin origen,
+      // como Postman o aplicaciones de servidor
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      // Permitir únicamente los dominios configurados
+      if (origenesPermitidos.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("Origen CORS rechazado:", origin);
+
+      return callback(null, false);
+    },
+
+    credentials: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS"
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization"
+    ]
   })
 );
+
+app.use(
+  cors({
+    origin: (origin, callback) => {
+
+      // Permitir solicitudes sin Origin
+      // como Postman o algunas solicitudes de servidor
+      if (!origin) {
+        return callback(null, true);
+      }
+
+      if (origenesPermitidos.includes(origin)) {
+        return callback(null, true);
+      }
+
+      console.log("Origen CORS rechazado:", origin);
+
+      return callback(new Error("Origen no permitido por CORS"));
+    },
+
+    credentials: true,
+
+    methods: [
+      "GET",
+      "POST",
+      "PUT",
+      "PATCH",
+      "DELETE",
+      "OPTIONS"
+    ],
+
+    allowedHeaders: [
+      "Content-Type",
+      "Authorization"
+    ]
+  })
+);
+
 
 // ======================================
 // MIDDLEWARES
