@@ -1,0 +1,20 @@
+node_modules
+# Dependencias
+node_modules/
+
+# Variables privadas
+.env
+.env.*
+!.env.example
+
+# Compilaciones
+dist/
+build/
+
+# Archivos locales
+*.log
+.vscode/
+
+# Archivos temporales
+tmp/
+temp/
